@@ -7,7 +7,7 @@ const {
   REDIRECT_URI
 } = process.env;
 
-let longLivedToken = ''; // In production, store in DB
+let longLivedToken = ''; 
 
 exports.getAuthUrl = (req, res) => {
   const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=pages_show_list,instagram_basic,instagram_content_publish&response_type=code`;
