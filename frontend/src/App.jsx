@@ -9,7 +9,7 @@ const App = () => {
   const [caption, setCaption] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
-  const BACKEND_URL = "https://instagram-jade-mu.vercel.app/instagram";
+  const BACKEND_URL = "http://localhost:5000/instagram";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
