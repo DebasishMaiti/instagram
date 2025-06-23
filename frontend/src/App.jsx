@@ -9,7 +9,7 @@ const App = () => {
   const [caption, setCaption] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
-  const BACKEND_URL = "http://localhost:5000/instagram";
+  const BACKEND_URL = "https://instagram-three-psi.vercel.app/instagram";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
