@@ -46,7 +46,7 @@ exports.handleCallback = async (req, res) => {
     const ig = await axios.get(`https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`);
     const igUserId = ig.data.instagram_business_account.id;
 
-    res.redirect(`http://localhost:5173/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
+    res.redirect(`https://instagram-two-neon.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
   } catch (err) {
     console.error('OAuth Error:', err.response?.data || err.message);
     res.status(500).json({ error: 'OAuth Failed' });
