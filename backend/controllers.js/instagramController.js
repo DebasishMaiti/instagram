@@ -7,7 +7,7 @@ const {
   REDIRECT_URI
 } = process.env;
 
-let longLivedToken = ''; 
+let longLivedToken = ''; // In production, store in DB
 
 exports.getAuthUrl = (req, res) => {
   const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${REDIRECT_URI}&scope=pages_show_list,instagram_basic,instagram_content_publish&response_type=code`;
@@ -46,7 +46,7 @@ exports.handleCallback = async (req, res) => {
     const ig = await axios.get(`https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`);
     const igUserId = ig.data.instagram_business_account.id;
 
-    res.redirect(`https://instagram-jade-mu.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
+    res.redirect(`https://instagram-es2b.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
   } catch (err) {
     console.error('OAuth Error:', err.response?.data || err.message);
     res.status(500).json({ error: 'OAuth Failed' });
