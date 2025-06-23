@@ -10,7 +10,10 @@ app.use(express.json({ limit: '10mb' }));
 
 app.use('/instagram', instaRoutes)
 
- app.get('/',(req,res)=>{
+app.get('/',(req,res)=>{
     res.json('Debasish Maiti')
+})
+ app.get('/Rampur',(req,res)=>{
+    res.json('Debasish Maiti from Rampur')
  })
 app.listen(5000, () => console.log('🚀 Backend running on http://localhost:5000'));
