@@ -46,11 +46,24 @@ exports.handleCallback = async (req, res) => {
     const pages = await axios.get(`https://graph.facebook.com/v18.0/me/accounts?access_token=${longLivedToken}`);
     console.log("Pages:", pages.data);
 
-    const pageId = pages.data.data[0].id;
+    const pageId = pages.data.data[0]?.id;
+    if (!pageId) {
+      return res.status(400).json({ error: "No Facebook Pages found for this user." });
+    }
+
     const ig = await axios.get(`https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`);
     console.log("IG business account:", ig.data);
 
-    const igUserId = ig.data.instagram_business_account.id;
+    const igBusiness = ig.data.instagram_business_account;
+
+    if (!igBusiness || !igBusiness.id) {
+      return res.status(400).json({
+        error: "No Instagram Business Account linked to this Facebook Page. Please connect it in Facebook Page settings.",
+        pageData: ig.data
+      });
+    }
+
+    const igUserId = igBusiness.id;
 
     res.redirect(`https://instagram-es2b.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
   } catch (err) {
