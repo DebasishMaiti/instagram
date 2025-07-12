@@ -17,6 +17,7 @@ exports.getAuthUrl = (req, res) => {
 exports.handleCallback = async (req, res) => {
   try {
     const { code } = req.query;
+    console.log("Received OAuth code:", code);
 
     const tokenRes = await axios.get(`https://graph.facebook.com/v18.0/oauth/access_token`, {
       params: {
@@ -28,6 +29,7 @@ exports.handleCallback = async (req, res) => {
     });
 
     const shortLivedToken = tokenRes.data.access_token;
+    console.log("Short-lived token:", shortLivedToken);
 
     const longTokenRes = await axios.get(`https://graph.facebook.com/v18.0/oauth/access_token`, {
       params: {
@@ -38,20 +40,25 @@ exports.handleCallback = async (req, res) => {
       }
     });
 
-    longLivedToken = longTokenRes.data.access_token;
+    const longLivedToken = longTokenRes.data.access_token;
+    console.log("Long-lived token:", longLivedToken);
 
     const pages = await axios.get(`https://graph.facebook.com/v18.0/me/accounts?access_token=${longLivedToken}`);
-    const pageId = pages.data.data[0].id;
+    console.log("Pages:", pages.data);
 
+    const pageId = pages.data.data[0].id;
     const ig = await axios.get(`https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`);
+    console.log("IG business account:", ig.data);
+
     const igUserId = ig.data.instagram_business_account.id;
 
     res.redirect(`https://instagram-es2b.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
   } catch (err) {
-    console.error('OAuth Error:', err.response?.data || err.message);
-    res.status(500).json({ error: 'OAuth Failed' });
+    console.error("OAuth Error:", err.response?.data || err.message);
+    res.status(500).json({ error: "OAuth Failed", details: err.response?.data || err.message });
   }
 };
+
 
 exports.postToInstagram = async (req, res) => {
   try {
