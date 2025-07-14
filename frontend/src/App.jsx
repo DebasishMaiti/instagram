@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import TermsAndConditions from "./pages/TermsAndConditions"; // Import the terms page component
 
-const App = () => {
+const Home = () => {
   const [accessToken, setAccessToken] = useState("");
   const [igUserId, setIgUserId] = useState("");
   const [username, setUsername] = useState("");
@@ -46,11 +48,11 @@ const App = () => {
     }
 
     try {
-      const res = await axios.post(`${BACKEND_URL}/post`, {
+      await axios.post(`${BACKEND_URL}/post`, {
         accessToken,
         igUserId,
         imageUrl,
-        caption
+        caption,
       });
       alert("✅ Post successful!");
     } catch (err) {
@@ -93,7 +95,33 @@ const App = () => {
           </div>
         </>
       )}
+
+      {/* Footer Links */}
+      <div style={{ marginTop: "3rem", textAlign: "center", fontSize: "0.9rem" }}>
+        <a
+          href="https://myoffshoreemployees.com/privacy-policy/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "#007bff", marginRight: "1rem", textDecoration: "underline" }}
+        >
+          Privacy Policy
+        </a>
+        <Link to="/terms" style={{ color: "#007bff", textDecoration: "underline" }}>
+          Terms & Conditions
+        </Link>
+      </div>
     </div>
+  );
+};
+
+const App = () => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
+      </Routes>
+    </Router>
   );
 };
 
