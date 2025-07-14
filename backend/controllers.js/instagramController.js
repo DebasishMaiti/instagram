@@ -19,6 +19,7 @@ exports.handleCallback = async (req, res) => {
     const { code } = req.query;
     console.log("Received OAuth code:", code);
 
+    // Exchange code for short-lived token
     const tokenRes = await axios.get(`https://graph.facebook.com/v18.0/oauth/access_token`, {
       params: {
         client_id: INSTAGRAM_APP_ID,
@@ -31,6 +32,7 @@ exports.handleCallback = async (req, res) => {
     const shortLivedToken = tokenRes.data.access_token;
     console.log("Short-lived token:", shortLivedToken);
 
+    // Exchange short-lived token for long-lived token
     const longTokenRes = await axios.get(`https://graph.facebook.com/v18.0/oauth/access_token`, {
       params: {
         grant_type: 'fb_exchange_token',
@@ -43,29 +45,48 @@ exports.handleCallback = async (req, res) => {
     const longLivedToken = longTokenRes.data.access_token;
     console.log("Long-lived token:", longLivedToken);
 
-    const pages = await axios.get(`https://graph.facebook.com/v18.0/me/accounts?access_token=${longLivedToken}`);
-    console.log("Pages:", pages.data);
+    // Get user's managed Facebook Pages
+    const pagesRes = await axios.get(`https://graph.facebook.com/v18.0/me/accounts?access_token=${longLivedToken}`);
+    const pages = pagesRes.data.data;
 
-    const pageId = pages.data.data[0]?.id;
-    if (!pageId) {
+    if (!pages || pages.length === 0) {
       return res.status(400).json({ error: "No Facebook Pages found for this user." });
     }
 
-    const ig = await axios.get(`https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`);
-    console.log("IG business account:", ig.data);
+    // Loop through pages to find the one with Instagram linked
+    let igUserId = null;
+    let validPageId = null;
 
-    const igBusiness = ig.data.instagram_business_account;
+    for (const page of pages) {
+      const pageId = page.id;
 
-    if (!igBusiness || !igBusiness.id) {
+      try {
+        const igRes = await axios.get(
+          `https://graph.facebook.com/v18.0/${pageId}?fields=instagram_business_account&access_token=${longLivedToken}`
+        );
+
+        const igBusiness = igRes.data.instagram_business_account;
+
+        if (igBusiness && igBusiness.id) {
+          igUserId = igBusiness.id;
+          validPageId = pageId;
+          break;
+        }
+      } catch (innerErr) {
+        console.warn(`Error checking page ${pageId}:`, innerErr.response?.data || innerErr.message);
+      }
+    }
+
+    if (!igUserId) {
       return res.status(400).json({
-        error: "No Instagram Business Account linked to this Facebook Page. Please connect it in Facebook Page settings.",
-        pageData: ig.data
+        error: "No Instagram Business Account linked to any Facebook Page.",
+        pagesChecked: pages.map(p => p.id)
       });
     }
 
-    const igUserId = igBusiness.id;
-
+    console.log("Selected IG User ID:", igUserId);
     res.redirect(`https://instagram-es2b.vercel.app/?access_token=${longLivedToken}&ig_user_id=${igUserId}`);
+
   } catch (err) {
     console.error("OAuth Error:", err.response?.data || err.message);
     res.status(500).json({ error: "OAuth Failed", details: err.response?.data || err.message });
